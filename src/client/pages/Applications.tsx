@@ -64,7 +64,11 @@ export default function Applications() {
 						<div class="proxy-form text-center">
 							<div class="glist">
 								{sites.map((site) => (
-									<App url={site.url} name={site.name} />
+									<App
+										url={site.url}
+										name={site.name}
+										icon={site.icon}
+									/>
 								))}
 							</div>
 							<ProxySettings />

@@ -110,6 +110,27 @@ export const sites = Object.freeze([
 	{ name: 'Reddit', url: 'https://www.reddit.com' },
 	{ name: 'Twitch', url: 'https://www.twitch.tv' },
 	{ name: 'TikTok', url: 'https://www.tiktok.com' },
+	// Icons default to the destination's own favicon (resolved against the
+	// target when the grid loads), falling back to the page's icon link.
+	{ name: 'HiAnime', url: 'https://hianime.at' },
+	{ name: 'Kazwire', url: 'https://kazwire.com' },
+	{ name: 'Obsidian', url: 'https://playobsidian.com' },
+	{ name: 'CloudMoon', url: 'https://web.cloudmoonapp.com' },
+	{
+		name: 'AniWatch',
+		url: 'https://aniwatch.ai.studio',
+		// AniWatch is an SPA that serves HTML for every path (no favicon or
+		// icon link of its own); this is the official 256x256 AniWatch logo
+		// from the original aniwatch.to site, served by the Wayback Machine.
+		icon: 'https://web.archive.org/web/20240301000000id_/https://aniwatch.to/images/favicon.png',
+	},
+	{
+		name: 'Geometry Dash',
+		url: 'https://web-dashers.github.io',
+		// Official 512x512 Geometry Dash app icon from RobTop Games' App
+		// Store artwork; the destination itself only serves a 256px favicon.
+		icon: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/d6/f2/c7/d6f2c72a-507c-3f74-931a-982fb6a13db2/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/512x512bb.jpg',
+	},
 	{ name: 'Animetsu', url: 'https://animetsu.site' },
 	{ name: 'Spotify', url: 'https://open.spotify.com' },
 ]);

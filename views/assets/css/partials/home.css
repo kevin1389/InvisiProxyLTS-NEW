@@ -196,6 +196,11 @@
 	margin: 0 auto;
 }
 
+/* Home menu of proxied application shortcuts shared with /apps. */
+.home-apps {
+	padding: 40px 16px;
+}
+
 .carousel-wrapper {
 	overflow: hidden;
 	position: relative;
