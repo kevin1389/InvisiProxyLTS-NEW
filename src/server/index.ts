@@ -118,6 +118,6 @@ server.listen(serverPort, serverUrl.hostname, () => {
 	);
 	if (config.disguiseFiles)
 		console.log(
-			`disguiseFiles is enabled. The site root now serves the entry point (views/dist/${entryPointFile}), which unlocks the page loader.`
+			`disguiseFiles is enabled. The site root now serves the entry point (views/dist-new/${entryPointFile}), which unlocks the page loader.`
 		);
 });
