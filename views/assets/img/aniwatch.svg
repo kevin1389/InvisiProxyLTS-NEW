@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+	<defs>
+		<linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#ffffff" />
+			<stop offset="1" stop-color="#c9c9c9" />
+		</linearGradient>
+		<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f8d75c" />
+			<stop offset="1" stop-color="#e2901a" />
+		</linearGradient>
+		<linearGradient id="gold2" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f3c23f" />
+			<stop offset="1" stop-color="#d88012" />
+		</linearGradient>
+	</defs>
+	<rect width="256" height="256" fill="#ffffff" />
+	<!-- Central flame rising from the W -->
+	<path d="M128 22 C137 50 158 62 158 92 C158 114 145 127 128 127 C111 127 98 114 98 92 C98 62 119 50 128 22 Z" fill="url(#gold)" />
+	<path d="M128 52 C134 70 145 76 145 96 C145 110 137 118 128 118 C119 118 111 110 111 96 C111 76 122 70 128 52 Z" fill="url(#gold2)" opacity="0.85" />
+	<!-- Silver W arms -->
+	<g fill="none" stroke="url(#silver)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+		<path d="M44 62 L92 148 L128 92" />
+		<path d="M212 62 L164 148 L128 92" />
+	</g>
+	<!-- Inner shading of the arms -->
+	<g fill="none" stroke="#b9b9b9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+		<path d="M52 74 L92 142" />
+		<path d="M204 74 L164 142" />
+	</g>
+	<!-- Flanking gold triangles -->
+	<polygon points="52,152 80,152 66,122" fill="url(#gold2)" />
+	<polygon points="176,152 204,152 190,122" fill="url(#gold2)" />
+	<!-- Wordmark -->
+	<text x="128" y="196" text-anchor="middle" font-family="Trebuchet MS, Arial, sans-serif" font-size="44" font-weight="700" fill="#e9a92c">ani</text>
+	<text x="128" y="238" text-anchor="middle" font-family="Trebuchet MS, Arial, sans-serif" font-size="46" font-weight="800" fill="#232323">watch</text>
+</svg>

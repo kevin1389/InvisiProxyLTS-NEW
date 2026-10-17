@@ -465,6 +465,25 @@ const preparePage = async () => {
     } catch {}
 
     try {
+      // A root-absolute configured icon is a site-local asset: the pages
+      // resolve it through the route() alias map, so fetch it directly
+      // instead of resolving it against the destination through the proxy
+      // transport (the built-in default stays destination-relative).
+      const configuredIcon = image.dataset.proxyIcon;
+      if (configuredIcon?.startsWith('/')) {
+        const response = await fetch(configuredIcon);
+        if (
+          !response.ok ||
+          !response.headers.get('content-type')?.startsWith('image/')
+        )
+          return;
+        const objectUrl = URL.createObjectURL(await response.blob());
+        image.addEventListener('load', () => URL.revokeObjectURL(objectUrl), { once: true });
+        image.addEventListener('error', () => URL.revokeObjectURL(objectUrl), { once: true });
+        image.src = objectUrl;
+        return;
+      }
+
       if (!window.$invisiScramjet?.ready) {
         await new Promise((resolve) =>
           window.addEventListener('s-ready', resolve, { once: true })

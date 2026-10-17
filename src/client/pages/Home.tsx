@@ -3,14 +3,22 @@ import {
 	Splash,
 	Inline,
 	route,
+	sites,
 	values,
 	SEO,
 } from '../document-helpers.tsx';
-import { ParticlesScript, PageScripts } from '../components/HeadScripts.tsx';
+import {
+	ParticlesScript,
+	PageScripts,
+	ScramjetScripts,
+	RegisterServiceWorkerScript,
+	TooltipScripts,
+} from '../components/HeadScripts.tsx';
 import HeadContent from '../components/HeadContent.tsx';
 import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
+import App from '../components/AppButton.tsx';
 
 export default function Home() {
 	return (
@@ -314,6 +322,18 @@ export default function Home() {
 					</div>
 				</div>
 				<Cooking />
+				<div data-aos="fade-right" class="text-center home-apps">
+					<h1 class="bigtitle">Applications</h1>
+					<div class="glist">
+						{sites.map((site) => (
+							<App
+								url={site.url}
+								name={site.name}
+								icon={site.icon}
+							/>
+						))}
+					</div>
+				</div>
 				<div class="text-center">
 					<div class="splashstroke">
 						<div>
@@ -748,6 +768,17 @@ export function Head() {
 			</SEO>
 			<HeadContent />
 			<ParticlesScript />
+			<link
+				rel="stylesheet"
+				href="https://unpkg.com/tippy.js@6/dist/backdrop.css"
+			/>
+			<link
+				rel="stylesheet"
+				href="https://unpkg.com/tippy.js@6/animations/shift-away.css"
+			/>
+			<ScramjetScripts />
+			<RegisterServiceWorkerScript />
+			<TooltipScripts />
 			<script
 				src="https://unpkg.com/aos@next/dist/aos.js"
 				defer={true}

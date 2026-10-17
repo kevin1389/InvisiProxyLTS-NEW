@@ -110,6 +110,29 @@ export const sites = Object.freeze([
 	{ name: 'Reddit', url: 'https://www.reddit.com' },
 	{ name: 'Twitch', url: 'https://www.twitch.tv' },
 	{ name: 'TikTok', url: 'https://www.tiktok.com' },
+	// Icons default to the destination's own favicon (resolved against the
+	// target when the grid loads), falling back to the page's icon link.
+	{ name: 'HiAnime', url: 'https://hianime.at' },
+	{ name: 'Kazwire', url: 'https://kazwire.com' },
+	{ name: 'Obsidian', url: 'https://playobsidian.com' },
+	{ name: 'CloudMoon', url: 'https://web.cloudmoonapp.com' },
+	{
+		name: 'AniWatch',
+		url: 'https://aniwatch.ai.studio',
+		// AniWatch is an SPA that serves HTML for every path (no favicon or
+		// icon link of its own); this bundled asset recreates the official
+		// 256x256 AniWatch logo. Drop the original PNG over this path and
+		// switch the extension to swap it in.
+		icon: '/assets/img/aniwatch.svg',
+	},
+	{
+		name: 'Geometry Dash',
+		url: 'https://web-dashers.github.io',
+		// Bundled recreation of the official 512x512 Geometry Dash app icon
+		// (the destination itself only serves a 256px favicon). Drop the
+		// original PNG over this path and switch the extension to swap it in.
+		icon: '/assets/img/geometry-dash.svg',
+	},
 	{ name: 'Animetsu', url: 'https://animetsu.site' },
 	{ name: 'Spotify', url: 'https://open.spotify.com' },
 ]);
