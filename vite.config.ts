@@ -73,7 +73,7 @@ const wispPlugin = (): Plugin => {
 };
 
 export default defineConfig({
-	base: serverUrl.pathname,
+	base: '',
 	publicDir: false,
 	plugins: [
 		siteBuildPlugin(),
