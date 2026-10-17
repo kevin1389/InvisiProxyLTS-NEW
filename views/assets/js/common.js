@@ -454,7 +454,10 @@ const preparePage = async () => {
 
   // Attach event listeners using goProx to specific app menus that need it.
   const loadAppIcon = async (image, destination) => {
-    const cacheKey = `${values.storageNamespace}-app-icon-${destination}`;
+    // Version the cache key so bundled icon changes (new site.ts entries or
+    // asset files) take effect immediately instead of waiting out the
+    // per-destination cache lifetime below.
+    const cacheKey = `${values.storageNamespace}-app-icon-v2-${destination}`;
     const cacheLifetime = 7 * 24 * 60 * 60 * 1000;
     try {
       const cached = JSON.parse(localStorage.getItem(cacheKey));
