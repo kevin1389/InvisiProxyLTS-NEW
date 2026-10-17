@@ -62,14 +62,14 @@ export function getPathAliases(): Record<string, string> {
 	for (const file of files) keys.add(`files/${file}`);
 	const names = generatedNames(keys, 'paths');
 	state.aliases = Object.fromEntries(
-		Object.entries(names).map(([key, value]) => {
-			if (key.startsWith('files/')) return [key, value + extname(key)];
-			if (key.includes('/') && !key.startsWith('prefixes/'))
-				return [key, key.slice(0, key.indexOf('/') + 1) + value];
-			return [key, value];
-		})
-	);
-	saveObfuscationState(state);
+    Object.entries(names).map(([key, value]) => {
+        if (key.startsWith('files/')) return [key, value + extname(key)];
+        if (key.includes('/') && !key.startsWith('prefixes/'))
+            return [key, key.slice(0, key.indexOf('/') + 1) + value];
+        return [key, value];
+    })
+) as Record<string, string>;
+saveObfuscationState(state);
 	return state.aliases;
 }
 
