@@ -1,8 +1,3 @@
-// Static assets that must never fall back to the proxy origin's own file
-// server when a proxied document requests them from a CDN-style path.
-const assetPath =
-	/\.(?:png|jpe?g|gif|webp|avif|svg|ico|bmp|wasm|woff2?|ttf|otf|eot|mp4|webm|og[gv]|mp3|wav|flac)(?:$|\?)/i;
-
 /**
  * Whether a request URL belongs to the Scramjet proxy prefix. blob:/data:
  * URLs never resolve against the proxy filesystem and stay with the
@@ -58,19 +53,25 @@ export function proxiedClientFor(
 }
 
 /**
- * Re-wrap an escaped asset request (an image, font, wasm module or media
- * file that a proxied client requested outside the Scramjet prefix) so it
- * loads through the same Wisp-backed controller route instead of falling
- * through to this origin's static site server, which answers remote asset
- * paths with 404s. Root-relative assets are re-resolved against the
- * proxied document's real origin; already-absolute cross-origin assets are
- * wrapped as-is. Returns null when the request should stay native.
+ * Re-wrap an escaped request (anything a proxied client requested outside
+ * the Scramjet prefix — images, fonts, wasm, media, but also scripts,
+ * styles, manifests and arbitrary game binaries whose extensions no
+ * allowlist could predict) so it loads through the same Wisp-backed
+ * controller route instead of falling through to this origin's static site
+ * server, which answers remote asset paths with 404s — or, worse, firing it
+ * as a direct cross-origin request that only has to survive whatever
+ * network sits in front of the proxy origin (a Cloudflare tunnel drops,
+ * rate-limits or buffers those; the single Wisp connection does not).
+ * Root-relative requests are re-resolved against the proxied document's
+ * real origin; already-absolute cross-origin requests are wrapped as-is.
+ * Navigations and everything that should stay native return null.
  */
 export function proxiedAssetUrl(
 	requestUrl: string,
 	clientUrl: string | undefined,
 	networkPrefixPath: string,
-	proxyOrigin: string
+	proxyOrigin: string,
+	requestMode?: string
 ): string | null {
 	let url: URL;
 	try {
@@ -80,7 +81,10 @@ export function proxiedAssetUrl(
 	}
 	if (!['http:', 'https:'].includes(url.protocol)) return null;
 	if (url.pathname.startsWith(networkPrefixPath)) return null;
-	if (!assetPath.test(url.pathname)) return null;
+	// A navigation must never be reconstructed as a wrapped subresource
+	// request; document requests are filtered out before this point, but the
+	// mode guard keeps any navigation-shaped request on its native path.
+	if (requestMode === 'navigate') return null;
 	const client = proxiedClientFor(clientUrl, networkPrefixPath);
 	if (!client) return null;
 	const target =

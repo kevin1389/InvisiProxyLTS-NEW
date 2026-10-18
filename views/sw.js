@@ -37,9 +37,25 @@ const routeEscapedAsset = async (event) => {
     event.request.url,
     client?.url,
     SCRAMJET_PREFIX,
-    self.location.origin
+    self.location.origin,
+    event.request.mode
   );
-  if (!wrapped) return fetch(event.request);
+  // The native path is a direct request through whatever fronts this origin
+  // (a Cloudflare tunnel, a reverse proxy). Network-level failures there —
+  // dropped tunnels, idle-closed connections, CORS refusals — reject the
+  // fetch. Never let that rejection escape respondWith as an uncaught
+  // TypeError inside the worker; hand the frame a retryable error response.
+  if (!wrapped) {
+    try {
+      return await fetch(event.request);
+    } catch (error) {
+      console.error('Native fetch failed:', event.request.url, error);
+      return new Response(null, {
+        status: 504,
+        headers: { 'Cache-Control': 'no-store', 'X-Proxy-Native-Fetch': 'failed' },
+      });
+    }
+  }
   const proxied = {
     request: new Request(wrapped, event.request),
     clientId: event.clientId,

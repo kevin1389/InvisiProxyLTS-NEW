@@ -457,7 +457,7 @@ const preparePage = async () => {
     // Version the cache key so bundled icon changes (new site.ts entries or
     // asset files) take effect immediately instead of waiting out the
     // per-destination cache lifetime below.
-    const cacheKey = `${values.storageNamespace}-app-icon-v2-${destination}`;
+    const cacheKey = `${values.storageNamespace}-app-icon-v3-${destination}`;
     const cacheLifetime = 7 * 24 * 60 * 60 * 1000;
     try {
       const cached = JSON.parse(localStorage.getItem(cacheKey));

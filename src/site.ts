@@ -114,7 +114,13 @@ export const sites = Object.freeze([
 	// target when the grid loads), falling back to the page's icon link.
 	{ name: 'HiAnime', url: 'https://hianime.at' },
 	{ name: 'Kazwire', url: 'https://kazwire.com' },
-	{ name: 'Obsidian', url: 'https://playobsidian.com' },
+	{
+		name: 'Games!',
+		url: 'https://playobsidian.com',
+		// Bundled recreation of the supplied gamepad artwork for this entry.
+		// Drop an image over this path and switch the extension to swap it.
+		icon: '/assets/img/gamepad.svg',
+	},
 	{ name: 'CloudMoon', url: 'https://web.cloudmoonapp.com' },
 	{
 		name: 'AniWatch',

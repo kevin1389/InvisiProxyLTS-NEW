@@ -13,9 +13,18 @@ const wrap = (target: string, controller = 'frame123', frame = 'abc45678') =>
 const clientUrl = wrap('https://games.poki.com/en/game');
 
 test('classifies prefix routes and leaves blob:/data: URLs native', () => {
-	assert.equal(isScramjetRouteUrl(wrap('https://x.example/a.png'), prefix), true);
-	assert.equal(isScramjetRouteUrl(`${proxyOrigin}/assets/img/a.png`, prefix), false);
-	assert.equal(isScramjetRouteUrl('blob:https://proxy.example/uuid', prefix), false);
+	assert.equal(
+		isScramjetRouteUrl(wrap('https://x.example/a.png'), prefix),
+		true
+	);
+	assert.equal(
+		isScramjetRouteUrl(`${proxyOrigin}/assets/img/a.png`, prefix),
+		false
+	);
+	assert.equal(
+		isScramjetRouteUrl('blob:https://proxy.example/uuid', prefix),
+		false
+	);
 	assert.equal(isScramjetRouteUrl('data:text/plain,x', prefix), false);
 	assert.equal(isScramjetRouteUrl('not a url', prefix), false);
 });
@@ -64,21 +73,71 @@ test('wraps escaped cross-origin CDN assets, wasm and media as-is', () => {
 		);
 });
 
-test('leaves native, non-asset and unproxied requests untouched', () => {
+test('wraps escaped scripts, styles, manifests and game binaries too', () => {
+	// Anything a proxied frame requests outside the prefix must ride the
+	// controller: scripts and styles were never on the old asset allowlist,
+	// and game binaries ship with extensions no list can predict.
+	for (const url of [
+		'https://files.crazygames.com/game/loader.js',
+		'https://poki-gdn.com/i/styles.css',
+		'https://cdn.example.com/manifest.json',
+		'https://cdn.example.com/game/assets.pak',
+	])
+		assert.equal(
+			proxiedAssetUrl(url, clientUrl, prefix, proxyOrigin),
+			wrap(url)
+		);
+	for (const [path, resolved] of [
+		['/api/data.json', 'https://games.poki.com/api/data.json'],
+		['/cdn/page.html', 'https://games.poki.com/cdn/page.html'],
+	])
+		assert.equal(
+			proxiedAssetUrl(proxyOrigin + path, clientUrl, prefix, proxyOrigin),
+			wrap(resolved)
+		);
+});
+
+test('leaves native, unproxied and navigation requests untouched', () => {
 	for (const [url, client] of [
-		[`${proxyOrigin}/api/data.json`, clientUrl],
-		[`${proxyOrigin}/cdn/page.html`, clientUrl],
 		[`${proxyOrigin}/cdn/thumb.png`, `${proxyOrigin}/home`],
 		[`${proxyOrigin}/cdn/thumb.png`, undefined],
 		['blob:https://proxy.example/uuid', clientUrl],
 		['not a url', clientUrl],
 	] as const)
 		assert.equal(proxiedAssetUrl(url, client, prefix, proxyOrigin), null);
+	// Navigations are filtered out upstream by destination, but must stay on
+	// the native path even if one reaches this helper.
+	assert.equal(
+		proxiedAssetUrl(
+			'https://files.crazygames.com/game.wasm',
+			clientUrl,
+			prefix,
+			proxyOrigin,
+			'navigate'
+		),
+		null
+	);
+	// Non-navigation modes wrap normally.
+	assert.equal(
+		proxiedAssetUrl(
+			'https://files.crazygames.com/game.wasm',
+			clientUrl,
+			prefix,
+			proxyOrigin,
+			'cors'
+		),
+		wrap('https://files.crazygames.com/game.wasm')
+	);
 });
 
 test('never rewraps requests already under the Scramjet prefix', () => {
 	assert.equal(
-		proxiedAssetUrl(wrap('https://x.example/t.png'), clientUrl, prefix, proxyOrigin),
+		proxiedAssetUrl(
+			wrap('https://x.example/t.png'),
+			clientUrl,
+			prefix,
+			proxyOrigin
+		),
 		null
 	);
 });

@@ -167,7 +167,12 @@ function applyResponseHooks(
 		}
 		return (writeHead as (...args: unknown[]) => ServerResponse).call(
 			this,
-			hide && !(statusCode >= 300 && statusCode < 400 && this.hasHeader('Location'))
+			hide &&
+				!(
+					statusCode >= 300 &&
+					statusCode < 400 &&
+					this.hasHeader('Location')
+				)
 				? 404
 				: statusCode,
 			...args
@@ -204,6 +209,7 @@ export function createSiteHandler({
 			root: join(siteDir, prefix),
 			precompressed: prefix !== 'assets' && !development,
 			vary: prefix !== 'assets',
+			proxy: true,
 		})
 	);
 	const pagesDir = {
@@ -211,11 +217,32 @@ export function createSiteHandler({
 		root: join(siteDir, 'pages'),
 		precompressed: false,
 		vary: false,
+		proxy: false,
 	};
 	type StaticDir = typeof pagesDir;
 
-	const notFound = (res: ServerResponse) =>
+	const notFound = (res: ServerResponse) => {
+		// Never let a failure be cached: a stale obfuscation alias behind a CDN
+		// or browser cache would otherwise pin a 404 until it expires.
+		res.setHeader('Cache-Control', 'no-store');
 		reply(res, 404, pageTypes.default, preloaded404());
+	};
+
+	/**
+	 * A miss inside a static/proxy directory (assets, scram, libcurl, epoxy).
+	 * These paths already bypass the disguise layer, so answering with the
+	 * anti-detection favicon document only breaks clients: scripts and proxied
+	 * sub-requests get `image/vnd.microsoft.icon` and cannot execute, which
+	 * surfaces as black-screened game frames when a request reaches the origin
+	 * without a controlling service worker. Fail honestly instead.
+	 */
+	const staticNotFound = (res: ServerResponse) => {
+		// Never let a failure be cached either: a stale 404 behind a CDN or
+		// tunnel cache would keep breaking proxied sub-requests after the
+		// asset is restored by a rebuild.
+		res.setHeader('Cache-Control', 'no-store');
+		reply(res, 404, 'text/plain; charset=utf-8', 'Not Found');
+	};
 
 	const undisguise = (path: string) =>
 		path.slice(0, path.length - 1 - disguiseExtension.length);
@@ -241,6 +268,11 @@ export function createSiteHandler({
 		const type = modified
 			? pageTypes[disguiseExtension]
 			: pageTypes[extension(file)] || pageTypes.default;
+		// Documents must always revalidate: they embed per-build obfuscation
+		// aliases, and a cached copy served after a rebuild points at asset
+		// and service-worker names that no longer exist (every proxied page
+		// then 404s behind CDNs and tunnels until the cache is cleared).
+		res.setHeader('Cache-Control', 'no-cache');
 		reply(res, 200, type, tryReadFile(file, siteUrl));
 	}
 
@@ -268,9 +300,15 @@ export function createSiteHandler({
 				if (encoding) res.setHeader('Content-Encoding', encoding[0]);
 				if (dir.vary) res.setHeader('Vary', 'Accept-Encoding');
 			});
-			stream.on('directory', () => notFound(res));
+			stream.on('directory', () =>
+				dir.proxy ? staticNotFound(res) : notFound(res)
+			);
 			stream.on('error', () =>
-				index < candidates.length ? attempt(index + 1) : notFound(res)
+				index < candidates.length
+					? attempt(index + 1)
+					: dir.proxy
+						? staticNotFound(res)
+						: notFound(res)
 			);
 			stream.pipe(res);
 		};
@@ -306,6 +344,9 @@ export function createSiteHandler({
 		const serviceWorker = serviceWorkers.get(path);
 		if (serviceWorker !== undefined) {
 			res.setHeader('Service-Worker-Allowed', base);
+			// Service worker scripts must revalidate or updated workers are
+			// never picked up behind caches.
+			res.setHeader('Cache-Control', 'no-cache');
 			return reply(
 				res,
 				200,
