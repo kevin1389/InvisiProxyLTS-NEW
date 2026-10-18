@@ -66,25 +66,51 @@ import {
     });
 
     await navigator.serviceWorker.ready;
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve) => {
-        let timer;
-        const onChange = () => {
-          clearTimeout(timer);
-          navigator.serviceWorker.removeEventListener(
-            'controllerchange',
-            onChange
-          );
-          resolve();
-        };
-        navigator.serviceWorker.addEventListener(
-          'controllerchange',
-          onChange,
-          { once: true }
-        );
-        timer = setTimeout(onChange, 5000);
-        if (navigator.serviceWorker.controller) onChange();
-      });
+
+    // Wait until the worker actually controls this client before anything
+    // proxies through it. Unregistering a stale worker (after a rebuild
+    // renames the script) fires a transient controllerchange with a null
+    // controller; resolving there would build the Scramjet controller on an
+    // uncontrolled client, sending every /network/... document and sub-request
+    // to the origin's static server — which answers them with 404s and
+    // black-screens proxied pages, typically behind slower tunnel deployments
+    // or right after a rebuild.
+    const controlled = await new Promise((resolve) => {
+      const finish = () => {
+        clearTimeout(timer);
+        navigator.serviceWorker.removeEventListener('controllerchange', onChange);
+        if (navigator.serviceWorker.controller)
+          try {
+            sessionStorage.removeItem(`${values.storageNamespace}-sw-reload`);
+          } catch {}
+        resolve(!!navigator.serviceWorker.controller);
+      };
+      const onChange = () => {
+        // Ignore the transient null change from unregistering a stale
+        // worker; only the new worker taking control ends the wait.
+        if (navigator.serviceWorker.controller) finish();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', onChange);
+      const timer = setTimeout(finish, 5000);
+      if (navigator.serviceWorker.controller) finish();
+    });
+
+    if (!controlled) {
+      // The worker is active but has not taken over (rare activation race on
+      // a slow first load). One guarded reload re-enters already controlled;
+      // the session flag stops any loop and falls back to the previous
+      // best-effort behavior.
+      let alreadyReloaded = true;
+      try {
+        const reloadKey = `${values.storageNamespace}-sw-reload`;
+        alreadyReloaded = !!sessionStorage.getItem(reloadKey);
+        if (!alreadyReloaded) sessionStorage.setItem(reloadKey, '1');
+      } catch {}
+      if (!alreadyReloaded) {
+        location.reload();
+        // Halt this pass; the reloaded document continues with control.
+        await new Promise(() => {});
+      }
     }
 
     return registration;

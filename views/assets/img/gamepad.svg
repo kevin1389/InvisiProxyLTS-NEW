@@ -1,0 +1,64 @@
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	width="512"
+	height="512"
+	viewBox="0 0 512 512"
+	role="img"
+>
+	<title>Gamepad</title>
+	<defs>
+		<filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+			<feGaussianBlur stdDeviation="3" />
+		</filter>
+	</defs>
+	<!-- Controller body -->
+	<path
+		fill="#3c4e62"
+		d="M 256 88
+			C 330 88 396 90 428 102
+			C 464 116 490 156 492 218
+			C 494 280 484 336 462 374
+			C 446 402 424 434 396 442
+			C 368 450 342 440 330 412
+			C 320 388 310 352 298 340
+			C 286 328 272 324 256 324
+			C 240 324 226 328 214 340
+			C 202 352 192 388 182 412
+			C 170 440 144 450 116 442
+			C 88 434 66 402 50 374
+			C 28 336 18 280 20 218
+			C 22 156 48 116 84 102
+			C 116 90 182 88 256 88
+			Z"
+	/>
+	<!-- D-pad shadow -->
+	<g transform="translate(0 9)" fill="#293543" filter="url(#soft)">
+		<path
+			d="M 135 146 L 169 146 L 169 189 L 212 189 L 212 223 L 169 223 L 169 266 L 135 266 L 135 223 L 92 223 L 92 189 L 135 189 Z"
+			stroke="#293543"
+			stroke-width="26"
+			stroke-linejoin="round"
+		/>
+	</g>
+	<!-- D-pad -->
+	<g fill="#f8f9fa">
+		<path
+			d="M 135 146 L 169 146 L 169 189 L 212 189 L 212 223 L 169 223 L 169 266 L 135 266 L 135 223 L 92 223 L 92 189 L 135 189 Z"
+			stroke="#f8f9fa"
+			stroke-width="26"
+			stroke-linejoin="round"
+		/>
+	</g>
+	<!-- Face button shadows -->
+	<g fill="#293543" filter="url(#soft)">
+		<circle cx="356" cy="160" r="27" />
+		<circle cx="304" cy="211" r="27" />
+		<circle cx="408" cy="211" r="27" />
+		<circle cx="356" cy="262" r="27" />
+	</g>
+	<!-- Face buttons -->
+	<circle cx="356" cy="152" r="27" fill="#fdc22b" />
+	<circle cx="304" cy="203" r="27" fill="#f04136" />
+	<circle cx="408" cy="203" r="27" fill="#2dbe5e" />
+	<circle cx="356" cy="254" r="27" fill="#2ba4ee" />
+</svg>

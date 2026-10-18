@@ -8,7 +8,7 @@ export default function Document(props: PageDefinition) {
 			<head>
 				<Head />
 			</head>
-			<body style={props.bodyStyle}>
+			<body id="top" style={props.bodyStyle}>
 				<Page />
 				{(props.bodyScripts || []).map((script) => (
 					<script {...script} />

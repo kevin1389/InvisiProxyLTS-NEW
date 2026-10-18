@@ -182,6 +182,11 @@ try {
 	}
 	const root = await app.inject(base);
 	assert.equal(root.statusCode, 200, 'root');
+	assert.equal(
+		root.headers['cache-control'],
+		'no-cache',
+		'documents revalidate so stale obfuscation aliases cannot linger'
+	);
 	assert.deepEqual(
 		root.rawPayload,
 		await readFile(
@@ -246,6 +251,7 @@ try {
 		);
 		assert.equal(response.statusCode, 200);
 		assert.equal(response.headers['service-worker-allowed'], base);
+		assert.equal(response.headers['cache-control'], 'no-cache', name);
 		assert.match(response.headers['content-type'] ?? '', /javascript/);
 		assert.doesNotMatch(
 			response.body,
@@ -285,6 +291,25 @@ try {
 				compressed.rawPayload.length < response.rawPayload.length
 			);
 		}
+	}
+	// Misses inside static/proxy directories must fail honestly: the
+	// anti-detection favicon document cannot execute as a script or resolve
+	// as an asset, and it must never be cached.
+	for (const url of [
+		`${base}assets/js/definitely-missing-${Date.now()}.js`,
+		`${getAltPrefix('scram', base)}network/frame123/abc456/${encodeURIComponent(
+			'https://example.com/main.js'
+		)}`,
+	]) {
+		const missing = await app.inject(url);
+		assert.equal(missing.statusCode, 404, url);
+		assert.doesNotMatch(
+			String(missing.headers['content-type']),
+			/image\/vnd\.microsoft\.icon/i,
+			url
+		);
+		assert.equal(missing.headers['cache-control'], 'no-store', url);
+		assert.equal(missing.body, 'Not Found', url);
 	}
 	for (const name of [
 		'common.js',
