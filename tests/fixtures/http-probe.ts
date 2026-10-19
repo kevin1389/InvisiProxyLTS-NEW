@@ -311,6 +311,53 @@ try {
 		assert.equal(missing.headers['cache-control'], 'no-store', url);
 		assert.equal(missing.body, 'Not Found', url);
 	}
+	// Script and worker requests must never receive the anti-detection
+	// documents (loader HTML or the favicon page): browsers refuse to
+	// execute them and report strict MIME type errors.
+	for (const [url, dest] of [
+		[`${base}missing-root-script-${Date.now()}.js`, 'script'],
+		[`${base}missing-root-module-${Date.now()}.mjs`, 'script'],
+		[`${base}missing-plain-${Date.now()}`, 'worker'],
+	] as const) {
+		const res = await app.inject({
+			url,
+			headers: { 'sec-fetch-dest': dest },
+		});
+		assert.equal(res.statusCode, 404, url);
+		assert.doesNotMatch(
+			String(res.headers['content-type']),
+			/text\/html|image\/vnd\.microsoft\.icon/i,
+			url
+		);
+		assert.equal(res.headers['cache-control'], 'no-store', url);
+	}
+	// Even an existing page must never be handed to a script destination:
+	// the page layer can only answer with HTML documents or redirects, and
+	// both are refused by the browser's strict MIME check.
+	const rootScript = await app.inject({
+		url: base,
+		headers: { 'sec-fetch-dest': 'script' },
+	});
+	assert.equal(rootScript.statusCode, 404, 'page as script destination');
+	assert.doesNotMatch(
+		String(rootScript.headers['content-type']),
+		/text\/html|image\/vnd\.microsoft\.icon/i,
+		'page as script destination'
+	);
+	assert.equal(rootScript.headers['cache-control'], 'no-store');
+	// Directory roots inside proxy dirs stay with the dir handler instead
+	// of falling back to the page layer's loader or favicon document.
+	const scramRoot = getAltPrefix('scram', base);
+	for (const url of [scramRoot, scramRoot.slice(0, -1)]) {
+		const res = await app.inject(url);
+		assert.equal(res.statusCode, 404, url);
+		assert.doesNotMatch(
+			String(res.headers['content-type']),
+			/text\/html|image\/vnd\.microsoft\.icon/i,
+			url
+		);
+		assert.equal(res.headers['cache-control'], 'no-store', url);
+	}
 	for (const name of [
 		'common.js',
 		'csel.js',

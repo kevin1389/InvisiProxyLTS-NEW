@@ -81,6 +81,22 @@ export function proxiedAssetUrl(
 	}
 	if (!['http:', 'https:'].includes(url.protocol)) return null;
 	if (url.pathname.startsWith(networkPrefixPath)) return null;
+	// The proxy engine's own files under its prefix directory (Scramjet
+	// bundle, controller and inject scripts, wasm/worker payloads) are this
+	// origin's infrastructure and are referenced as such by proxied frames.
+	// Re-wrapping them would ask the frame's target origin for them, so the
+	// remote server answers with its own 404, the frame's scripts never load,
+	// and games and apps hang on black screens. Keep them native so the
+	// origin's static handler serves them directly.
+	const enginePrefix = networkPrefixPath.endsWith('network/')
+		? networkPrefixPath.slice(0, -'network/'.length)
+		: '';
+	if (
+		enginePrefix &&
+		url.origin === proxyOrigin &&
+		url.pathname.startsWith(enginePrefix)
+	)
+		return null;
 	// A navigation must never be reconstructed as a wrapped subresource
 	// request; document requests are filtered out before this point, but the
 	// mode guard keeps any navigation-shaped request on its native path.
