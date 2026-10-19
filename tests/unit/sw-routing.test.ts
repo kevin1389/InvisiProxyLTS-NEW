@@ -141,3 +141,46 @@ test('never rewraps requests already under the Scramjet prefix', () => {
 		null
 	);
 });
+
+test('keeps the proxy engine\u2019s own same-origin files on the native path', () => {
+	// A proxied frame references the controller and Scramjet bundle on the
+	// proxy origin. Wrapping them against the frame's target makes the
+	// remote origin answer with its own 404 instead of the proxy serving
+	// the scripts, which black-screens games and proxied apps.
+	for (const path of [
+		'/scram/scramjet.js',
+		'/scram/controller.inject.js',
+		'/scram/scram/controller.sw.js',
+	])
+		assert.equal(
+			proxiedAssetUrl(proxyOrigin + path, clientUrl, prefix, proxyOrigin),
+			null,
+			path
+		);
+	// The same holds for aliased engine prefixes in production builds.
+	const aliasedPrefix = '/kaiser/network/';
+	const aliasedClient = `${proxyOrigin}${aliasedPrefix}frame123/abc45678/${encodeURIComponent(
+		'https://games.poki.com/en/game'
+	)}`;
+	for (const path of ['/kaiser/scramjet.js', '/kaiser/controller.inject.js'])
+		assert.equal(
+			proxiedAssetUrl(
+				proxyOrigin + path,
+				aliasedClient,
+				aliasedPrefix,
+				proxyOrigin
+			),
+			null,
+			path
+		);
+	// Escaped same-origin paths outside the engine directory still wrap.
+	assert.equal(
+		proxiedAssetUrl(
+			`${proxyOrigin}/cdn/thumb.png`,
+			clientUrl,
+			prefix,
+			proxyOrigin
+		),
+		wrap('https://games.poki.com/cdn/thumb.png')
+	);
+});

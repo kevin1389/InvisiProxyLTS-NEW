@@ -66,6 +66,21 @@ const encodings = [
 const trimSlash = (path: string) =>
 	path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
 
+// Subresource requests that must never receive the anti-detection
+// documents (the loader page or the favicon-disguised 404). Serving HTML
+// or an icon for them triggers the browser's strict MIME refusal
+// ("Refused to execute script … its MIME type is not executable") and
+// black-screens games and proxied apps.
+const scriptDests = new Set([
+	'script',
+	'worker',
+	'sharedworker',
+	'serviceworker',
+]);
+const scriptExt = /\.(?:mjs|js|wasm)$/;
+const isScriptLike = (dest: string, path: string) =>
+	scriptDests.has(dest) || scriptExt.test(path);
+
 const decode = (path: string) => {
 	try {
 		return decodeURIComponent(path);
@@ -127,7 +142,9 @@ function disguiseCheck(
 		const path = pathname.slice(base.length);
 		if (
 			otherFile.test(path) ||
-			exemptDirs.some((dir) => path.startsWith(`${dir}/`)) ||
+			exemptDirs.some(
+				(dir) => path === dir || path.startsWith(`${dir}/`)
+			) ||
 			exemptPages.includes(path)
 		)
 			return 'pass';
@@ -221,10 +238,15 @@ export function createSiteHandler({
 	};
 	type StaticDir = typeof pagesDir;
 
-	const notFound = (res: ServerResponse) => {
+	const notFound = (res: ServerResponse, scriptLike = false) => {
 		// Never let a failure be cached: a stale obfuscation alias behind a CDN
 		// or browser cache would otherwise pin a 404 until it expires.
 		res.setHeader('Cache-Control', 'no-store');
+		// A missing script or worker fails honestly instead of answering with
+		// the anti-detection HTML/icon document, which the browser refuses
+		// to execute as JavaScript and reports as a MIME type error.
+		if (scriptLike)
+			return reply(res, 404, 'text/plain; charset=utf-8', 'Not Found');
 		reply(res, 404, pageTypes.default, preloaded404());
 	};
 
@@ -247,7 +269,17 @@ export function createSiteHandler({
 	const undisguise = (path: string) =>
 		path.slice(0, path.length - 1 - disguiseExtension.length);
 
-	function servePage(res: ServerResponse, name: string, modified: boolean) {
+	function servePage(
+		res: ServerResponse,
+		name: string,
+		modified: boolean,
+		scriptLike = false
+	) {
+		// The page layer only serves HTML documents, favicon bytes and
+		// external redirects — none of which a script, worker or module can
+		// execute. Answer honestly instead of handing the browser an HTML
+		// document it will reject with a strict MIME type error.
+		if (scriptLike) return notFound(res, true);
 		if (name === 'favicon.ico') return reply(res, 200);
 
 		if (Object.hasOwn(externalPages, name)) {
@@ -260,7 +292,7 @@ export function createSiteHandler({
 			);
 		}
 
-		if (!Object.hasOwn(pages, name)) return notFound(res);
+		if (!Object.hasOwn(pages, name)) return notFound(res, scriptLike);
 		const file =
 			!name && config.disguiseFiles && !modified
 				? entryPointFile
@@ -300,13 +332,22 @@ export function createSiteHandler({
 				if (encoding) res.setHeader('Content-Encoding', encoding[0]);
 				if (dir.vary) res.setHeader('Vary', 'Accept-Encoding');
 			});
+			// Proxy directories and script-class requests always fail honestly:
+			// the page fallbacks are HTML/icon documents that browsers refuse
+			// to run as JavaScript or wasm.
+			const honest =
+				dir.proxy ||
+				isScriptLike(
+					String(req.headers['sec-fetch-dest'] || ''),
+					decode(file)
+				);
 			stream.on('directory', () =>
-				dir.proxy ? staticNotFound(res) : notFound(res)
+				honest ? staticNotFound(res) : notFound(res)
 			);
 			stream.on('error', () =>
 				index < candidates.length
 					? attempt(index + 1)
-					: dir.proxy
+					: honest
 						? staticNotFound(res)
 						: notFound(res)
 			);
@@ -327,14 +368,20 @@ export function createSiteHandler({
 			return reply(res, 404, 'text/plain', 'Not Found');
 
 		const disguise = checkDisguise(url);
-		if (disguise === 'loader')
+		const dest = String(req.headers['sec-fetch-dest'] || '');
+		const scriptLike = isScriptLike(dest, decode(path));
+		// Script and worker requests bypass the anti-detection layer entirely:
+		// the loader page and favicon documents are not executable, so serving
+		// them here is exactly what triggers strict MIME refusals upstream.
+		if (disguise === 'loader' && !scriptLike)
 			return reply(res, 200, pageTypes.html, loaderPage);
-		const modified = disguise === 'modified';
+		const modified = disguise === 'modified' && !scriptLike;
 		if (modified) {
 			res.setHeader('Content-Type', pageTypes[disguiseExtension]);
 			res.setHeader('Access-Control-Allow-Origin', 'null');
 		}
-		if (req.method !== 'GET' && req.method !== 'HEAD') return notFound(res);
+		if (req.method !== 'GET' && req.method !== 'HEAD')
+			return notFound(res, scriptLike);
 
 		if (matchesWispPath(path, wispRoute))
 			return wispRedirect
@@ -356,9 +403,19 @@ export function createSiteHandler({
 		}
 
 		const relative = path === baseRoute ? '' : path.slice(base.length);
+		// A directory root inside a proxy dir (its trailing slash was trimmed
+		// above) must stay with that dir's handler instead of falling back to
+		// the page layer and its loader/favicon documents.
+		const dirRoot = staticDirs.find((dir) => `${path}/` === dir.prefix);
+		if (dirRoot) return serveStatic(req, res, dirRoot, '');
 		if (!relative.includes('/')) {
 			const name = decode(relative);
-			return servePage(res, modified ? undisguise(name) : name, modified);
+			return servePage(
+				res,
+				modified ? undisguise(name) : name,
+				modified,
+				scriptLike
+			);
 		}
 
 		const github = /^github\/([^/]+)$/.exec(relative);
@@ -366,11 +423,17 @@ export function createSiteHandler({
 			const name = decode(github[1]);
 			return Object.hasOwn(externalPages.github, name)
 				? redirect(res, externalPages.github[name])
-				: notFound(res);
+				: notFound(res, scriptLike);
 		}
 
+		// A directory root inside a proxy dir (trailing slash trimmed earlier)
+		// must stay with that dir's handler instead of falling back to the
+		// page layer and its favicon document.
 		const dir =
-			staticDirs.find((dir) => path.startsWith(dir.prefix)) || pagesDir;
+			staticDirs.find(
+				(dir) =>
+					path.startsWith(dir.prefix) || `${path}/` === dir.prefix
+			) || pagesDir;
 		const file = path.slice(dir.prefix.length);
 		serveStatic(req, res, dir, modified ? undisguise(file) : file);
 	};
