@@ -91,12 +91,31 @@ const decode = (path: string) => {
 
 const extension = (file: string) => file.slice(file.lastIndexOf('.') + 1);
 
+/**
+ * Whether a response can still be answered normally. A transfer that has
+ * already put bytes on the wire, a finished response, and a response whose
+ * peer vanished mid-stream all reject further writes, and setHeader()
+ * answers with ERR_HTTP_HEADERS_SENT. Raised from a stream event handler
+ * that is an uncaught exception, which kills the process — and with it
+ * every other session currently streaming through the proxy. Heavy games
+ * and chat apps abort and restart asset transfers constantly, so this path
+ * is hit in normal operation rather than rarely.
+ */
+const responseUsable = (res: ServerResponse) =>
+	!res.headersSent && !res.writableEnded && !res.destroyed;
+
+/** Drop a response that can no longer carry a body, without throwing. */
+const abandon = (res: ServerResponse) => {
+	if (!res.writableEnded) res.destroy();
+};
+
 function reply(
 	res: ServerResponse,
 	status: number,
 	type?: string,
 	body?: string | Buffer
 ) {
+	if (!responseUsable(res)) return abandon(res);
 	const payload = typeof body === 'string' ? Buffer.from(body) : body;
 	res.statusCode = status;
 	if (type) res.setHeader('Content-Type', type);
@@ -239,6 +258,10 @@ export function createSiteHandler({
 	type StaticDir = typeof pagesDir;
 
 	const notFound = (res: ServerResponse, scriptLike = false) => {
+		// A transfer that already started, or a client that already went away,
+		// cannot be answered with a 404 any more — try anyway and the process
+		// dies on the thrown setHeader error.
+		if (!responseUsable(res)) return abandon(res);
 		// Never let a failure be cached: a stale obfuscation alias behind a CDN
 		// or browser cache would otherwise pin a 404 until it expires.
 		res.setHeader('Cache-Control', 'no-store');
@@ -259,6 +282,7 @@ export function createSiteHandler({
 	 * without a controlling service worker. Fail honestly instead.
 	 */
 	const staticNotFound = (res: ServerResponse) => {
+		if (!responseUsable(res)) return abandon(res);
 		// Never let a failure be cached either: a stale 404 behind a CDN or
 		// tunnel cache would keep breaking proxied sub-requests after the
 		// asset is restored by a rebuild.
@@ -344,19 +368,28 @@ export function createSiteHandler({
 			stream.on('directory', () =>
 				honest ? staticNotFound(res) : notFound(res)
 			);
-			stream.on('error', () =>
-				index < candidates.length
-					? attempt(index + 1)
-					: honest
-						? staticNotFound(res)
-						: notFound(res)
-			);
+			stream.on('error', () => {
+				// Once any bytes have gone out the transfer is over: retrying
+				// another encoding or swapping in a 404 would append a second
+				// response to a live stream and throw. Drop the socket instead.
+				if (!responseUsable(res)) return abandon(res);
+				if (index < candidates.length) attempt(index + 1);
+				else if (honest) staticNotFound(res);
+				else notFound(res);
+			});
 			stream.pipe(res);
 		};
 		attempt(0);
 	}
 
 	return (req, res) => {
+		// Peer resets are normal traffic here — a game navigating away, a// tunnel drop, a closed tab — and pipe() deliberately does not forward
+		// destination errors. Without a listener an 'error' on either side of
+		// the exchange becomes an uncaught exception that takes the process
+		// down with every other session on it, so absorb them and let the
+		// response end.
+		req.on('error', () => {});
+		res.on('error', () => {});
 		applyResponseHooks(req, res, development);
 		const url = req.url || '/';
 		const path = trimSlash(url.split('?')[0].replace(/\/{2,}/g, '/'));
