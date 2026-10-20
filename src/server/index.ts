@@ -110,7 +110,7 @@ process.once('exit', () => {
 	for (const wisp of wisps.values()) wisp.kill?.();
 });
 
-server.listen(serverPort, serverUrl.hostname, () => {
+server.listen(serverPort, '0.0.0.0', () => {
 	process.send?.({ type: 'ready' });
 	console.log(`InvisiProxy is listening on port ${serverPort}.`);
 	console.log(

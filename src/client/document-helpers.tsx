@@ -22,6 +22,7 @@ export function iconBookmarklet() {
 	return `javascript:alert((Array.from(document.head.querySelectorAll("link[rel*='icon']")).slice(-1)[0]||0).href||location.origin+"${route('/favicon.ico')}")`;
 }
 export function Cooking() {
+	if (values.usingSEO) return null;
 	return (
 		<span
 			style={{ display: 'none' }}

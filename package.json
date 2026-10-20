@@ -1,6 +1,6 @@
 {
 	"name": "invisiproxy",
-	"version": "8.1.0",
+	"version": "8.1.1",
 	"repository": "https://github.com/QuiteAFancyEmerald/InvisiProxy",
 	"description": "InvisiProxy LTS is a web proxy service that helps you access websites that may be blocked by your network, government or policy all within your browser with no download or setup.",
 	"scripts": {
@@ -40,7 +40,7 @@
 		"@mercuryworkshop/scramjet": "2.0.67-alpha.2",
 		"@mercuryworkshop/scramjet-controller": "0.0.14",
 		"@mercuryworkshop/scramjet-utils": "^0.0.3",
-		"merp-obfuscator": "^0.1.0",
+		"merp-obfuscator": "^0.1.1",
 		"parse5": "^8.0.1",
 		"send": "^1.2.1",
 		"solid-js": "^1.9.17",
