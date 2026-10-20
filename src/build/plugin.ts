@@ -139,12 +139,12 @@ function environments(): Record<string, EnvironmentOptions> {
 				minify: config.minifyScripts,
 				cssMinify: isDevelopment() ? config.minifyScripts : true,
 				rolldownOptions: {
-					input: Object.fromEntries(
+					input: styles.length > 0 ? Object.fromEntries(
 						styles.map((style) => [
 							style.target.replace(/\.css$/, ''),
 							style.source,
 						])
-					),
+					) : { main: './views/assets/css/style.css' },
 					output: { assetFileNames: '[name][extname]' },
 				},
 			},

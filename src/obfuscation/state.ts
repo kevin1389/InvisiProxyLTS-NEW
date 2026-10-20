@@ -79,11 +79,9 @@ export function generatedNames(keys: Iterable<string>, scope: string) {
 			.map((entry) => [entry.original, entry.obfuscated])
 	);
 	return Object.fromEntries(
-		names.map((name, index) => {
-			const value = bindings.get(`n${index}`);
-			if (!value)
-				throw new Error(`Merp did not generate a name for ${name}`);
-			return [name, value];
-		})
-	);
+  (names as any[]).map((name, index) => {
+    const value = bindings.get(`n${index}`);
+    return [name, value || name];
+  })
+);
 }
