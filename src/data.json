@@ -553,5 +553,5 @@
 		"In the case of site support consider enabling Tor browsing on sites like YouTube or GeForce NOW with Libcurl! We offer more domains per month, beta access, personal domains and priority feature requests. You can donate on the Patreon page if you wish to support the project for more links and hosting!",
 		"Tip: Getting 502 errors with Cloudflare? Check the GitHub to report the issue or reload the page! Sometimes it may just be a small issue. Enable Tor routing or swap transport methods in case the issue persists."
 	],
-	"version": ["8.1.0"]
+	"version": ["8.1.1"]
 }

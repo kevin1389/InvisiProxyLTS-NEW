@@ -7,8 +7,13 @@ import solid from 'vite-plugin-solid';
 import { wispurrVite } from 'wispurr/vite';
 import { siteDevPlugin } from './src/build/dev.ts';
 import { siteBuildPlugin } from './src/build/plugin.ts';
-import { serverPort, serverUrl } from './src/config.ts';
-import { isWispRequest, wispOptions, wispPath } from './src/server/wisp.ts';
+import { serverPort } from './src/config.ts';
+import {
+	isWispRequest,
+	wispOptions,
+	wispPath,
+	wispRegion,
+} from './src/server/wisp.ts';
 
 // wispurr drives a Go worker binary that may be missing or built for another
 // platform/libc (e.g. the published musl build on a glibc host). Probe that it
@@ -53,19 +58,30 @@ const wispPlugin = (): Plugin => {
 				allow_udp_streams: false,
 				allow_direct_ip: false,
 				allow_private_ips: false,
-				allow_loopback_ips: false,
+				allow_loopback_ips: wispOptions.allowLoopbackIPs,
 				port_blacklist: wispOptions.blacklist.ports,
 				dns_result_order: wispOptions.dnsResultOrder,
 				parse_real_ip: wispOptions.parseRealIP,
 				parse_real_ip_from: wispOptions.trustedProxies,
 			});
 			server.httpServer?.on('upgrade', (req, socket, head) => {
-				if (!isWispRequest(req.url)) return;
+				const region = wispRegion(req.url);
+				if (region === null) return;
 				// wisp-js routes any path that does not end in "/" to its
 				// WebSocket proxy instead of the Wisp handler. Hand it the
 				// canonical path so query strings or encoded variants can
 				// never divert a Wisp handshake into the proxy protocol.
 				req.url = wispPath();
+				if (region !== '') {
+					// This fallback only runs when wispurr cannot start, and
+					// the pure-JS server has no SOCKS support, so the
+					// regional Tor/VPN backends cannot be represented here.
+					// Egressing the request via the default backend would send
+					// traffic a user selected Tor for out to the clearnet;
+					// refuse instead. Matches src/server/index.ts.
+					socket.destroy();
+					return;
+				}
 				wisp.routeRequest(req, socket, head);
 			});
 		},

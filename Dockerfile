@@ -2,7 +2,7 @@ FROM node:26-alpine
 WORKDIR /app
 LABEL org.opencontainers.image.title="InvisiProxy LTS" \
       org.opencontainers.image.description="An effective, privacy-focused web proxy service" \
-      org.opencontainers.image.version="8.1.0" \
+      org.opencontainers.image.version="8.1.1" \
       org.opencontainers.image.authors="InvisiProxy Team" \
       org.opencontainers.image.source="https://github.com/InvisiProxy/InvisiProxyLTS"
 RUN apk add --no-cache tor musl bash python3 py3-pip make g++ gcc libc-dev gcompat
