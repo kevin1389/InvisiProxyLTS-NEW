@@ -461,12 +461,24 @@ try {
 	});
 	assert.equal(restocked.json().link, 'https://restocked.example/');
 	const directories = await readdir('views/dist', { withFileTypes: true });
+	const translated =
+		Object.keys(
+			JSON.parse(await readFile('views/dist/locales.json', 'utf8'))
+				.locales
+		).length > 1;
 	assert.deepEqual(
 		directories
 			.filter((entry) => entry.isDirectory())
 			.map((entry) => entry.name)
 			.sort(),
-		['assets', 'epoxy', 'libcurl', 'pages', 'scram']
+		[
+			'assets',
+			'epoxy',
+			'libcurl',
+			...(translated ? ['locales'] : []),
+			'pages',
+			'scram',
+		]
 	);
 	const files = await readdir('views/dist', { recursive: true });
 	assert.ok(!files.includes('pages/surf.html'));

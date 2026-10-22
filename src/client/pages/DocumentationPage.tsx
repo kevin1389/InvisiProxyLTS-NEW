@@ -1,4 +1,10 @@
-import { Cooking, Inline, route } from '../document-helpers.tsx';
+import {
+	Keywords,
+	Inline,
+	route,
+	SEO,
+	translate,
+} from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	PageScripts,
@@ -13,7 +19,7 @@ import Footer from '../components/Footer.tsx';
 export default function DocumentationPage() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
@@ -31,7 +37,7 @@ export default function DocumentationPage() {
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
-			<Cooking />
+			<Keywords />
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
 			</Inline>
@@ -79,8 +85,57 @@ export default function DocumentationPage() {
 export function Head() {
 	return (
 		<>
-			<title>InvisiProxy LTS</title>
-			<PageDescription />
+			<title>{translate('docs.meta.title')}</title>
+			<SEO>
+				<meta
+					name="robots"
+					content="index, follow, max-image-preview:large"
+				/>
+				<meta
+					name="description"
+					content={translate('docs.meta.description')}
+				/>
+				<meta property="og:site_name" content="InvisiProxy LTS" />
+				<meta
+					property="og:title"
+					content={translate('docs.meta.title')}
+				/>
+				<meta property="og:type" content="website" />
+				<meta
+					property="og:description"
+					content={translate('docs.meta.social')}
+				/>
+			</SEO>
+			<meta property="og:image" content={route('assets/img/hero.webp')} />
+			<meta
+				property="og:image:secure_url"
+				content={route('assets/img/hero.webp')}
+			/>
+			<SEO>
+				<meta
+					property="og:image:alt"
+					content={translate('common.logoAlt')}
+				/>
+				<meta name="twitter:card" content="summary_large_image" />
+				<meta name="twitter:site" content="@titaniumnetdev" />
+				<meta name="twitter:creator" content="@titaniumnetdev" />
+				<meta
+					name="twitter:title"
+					content={translate('docs.meta.title')}
+				/>
+				<meta
+					name="twitter:description"
+					content={translate('docs.meta.social')}
+				/>
+				<meta
+					name="twitter:image"
+					content={route('assets/img/hero.webp')}
+				/>
+				<meta
+					name="twitter:image:alt"
+					content={translate('common.logoAlt')}
+				/>
+			</SEO>
 			<HeadContent />
 			<ParticlesScript />
 			<PageScripts />

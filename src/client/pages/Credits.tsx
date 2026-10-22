@@ -1,4 +1,11 @@
-import { Cooking, Inline, route, credits } from '../document-helpers.tsx';
+import {
+	Keywords,
+	Inline,
+	route,
+	credits,
+	translate,
+	Translation,
+} from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	PageScripts,
@@ -12,42 +19,50 @@ import Footer from '../components/Footer.tsx';
 export default function Credits() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
 			</div>
 			<div id="background" class="fullwidth"></div>
-			<Cooking />
+			<Keywords />
 			<div id="mainbody" class="box-hero">
-				<Cooking />
+				<Keywords />
 				<div id="credits" class="hero-grid-container">
 					<div class="box-hero">
 						<div class="box-noflex">
-							<h1 class="bigtitle">Credits</h1>
-							<h2>What is InvisiProxy?</h2>
+							<h1 class="bigtitle">
+								{translate('credits.title')}
+							</h1>
+							<h2>{translate('privacy.what.title')}</h2>
 							<p>
-								InvisiProxy LTS is an official web proxy service
-								can bypass web filters regardless of whether it
-								is an extension or network-based.
-								<br />
-								This project allows you to access content
-								otherwise blocked by governments, schools, or
-								workplaces.
+								<Translation id="credits.intro" />
 							</p>
 							<div>
 								{credits.map((section) => (
 									<>
-										<h3>{section.title}</h3>
+										<h3>
+											{translate(
+												`credits.sections.${section.id}`
+											)}
+										</h3>
 										<table class="documentation-table">
 											<thead>
 												<tr>
-													<th scope="col">Name</th>
 													<th scope="col">
-														Contributions
+														{translate(
+															'credits.name'
+														)}
 													</th>
 													<th scope="col">
-														Notes and Contact Info
+														{translate(
+															'credits.contributions'
+														)}
+													</th>
+													<th scope="col">
+														{translate(
+															'credits.contact'
+														)}
 													</th>
 												</tr>
 											</thead>
@@ -98,7 +113,7 @@ export default function Credits() {
 											src={route(
 												'/assets/img/potato.png'
 											)}
-											alt="icon"
+											alt={translate('credits.iconAlt')}
 										/>
 									</div>
 								</div>
@@ -110,7 +125,7 @@ export default function Credits() {
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
-			<Cooking />
+			<Keywords />
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
 			</Inline>
@@ -121,7 +136,7 @@ export default function Credits() {
 export function Head() {
 	return (
 		<>
-			<title>InvisiProxy LTS | Credits</title>
+			<title>{`InvisiProxy LTS | ${translate('credits.title')}`}</title>
 			<PageDescription />
 			<HeadContent />
 			<ParticlesScript />

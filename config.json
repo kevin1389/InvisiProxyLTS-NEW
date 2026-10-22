@@ -1,1 +1,16 @@
-{"title":"Invisi LTS","host":"0.0.0.0","pathname":"/","mirrorLinksFile":"private/mirror-links.txt","minifyScripts":true,"disguiseFiles":true,"usingSEO":true,"verbose":true,"port":8080,"showSplash":true,"apps":["proxy"]}
+{
+	"title": "Invisi LTS",
+	"host": "0.0.0.0",
+	"pathname": "/",
+	"mirrorLinksFile": "private/mirror-links.txt",
+	"minifyScripts": true,
+	"disguiseFiles": true,
+	"usingSEO": true,
+	"verbose": true,
+	"port": 8080,
+	"showSplash": true,
+	"geoLanguage": false,
+	"singleLanguage": false,
+	"language": "en",
+	"apps": ["proxy"]
+}

@@ -129,7 +129,7 @@ const wispConfig = {
 	trustedHeaders: ['X-Forwarded-For'],
 	nonWSResponse: 'meow',
 	nonWSRedirect: '/pages/404.html',
-	logLevel: 'warn',
+	logLevel: 'none',
 	proxy: '',
 	// Must fit one full inbound DATA frame: 5-byte Wisp header + tcpBufferSize
 	// (wispurr's example config uses tcpBufferSize + 5). At exactly

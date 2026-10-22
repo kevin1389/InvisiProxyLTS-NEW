@@ -1,12 +1,12 @@
-import { Cooking, Inline, route, values, SEO } from '../document-helpers.tsx';
+import { Keywords, Inline, route, values, SEO } from '../document-helpers.tsx';
 
 export default function EntryPoint() {
 	return (
 		<>
-			<Cooking />
-			<Cooking />
-			<Cooking />
-			<Cooking />
+			<Keywords />
+			<Keywords />
+			<Keywords />
+			<Keywords />
 			<script
 				innerHTML={`
       localStorage.setItem('${values.storageNamespace}-loader-key', navigator.userAgent);
@@ -15,8 +15,8 @@ export default function EntryPoint() {
 			<Inline>
 				<script src={route('assets/js/loader.js', 'inline')} />
 			</Inline>
-			<Cooking />
-			<Cooking />
+			<Keywords />
+			<Keywords />
 		</>
 	);
 }

@@ -419,10 +419,6 @@
 		gap: 12px;
 	}
 
-	.navbar > .dmenu {
-		display: none;
-	}
-
 	.navbar > .smenu {
 		margin-left: 12px;
 	}
@@ -433,6 +429,14 @@
 }
 
 @media (max-width: 1160px) {
+	.navbar-group {
+		margin-left: auto;
+	}
+
+	.navbar > .dmenu {
+		display: none;
+	}
+
 	.navbar {
 		display: flex;
 	}

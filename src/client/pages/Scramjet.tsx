@@ -1,4 +1,11 @@
-import { Cooking, Inline, route, values } from '../document-helpers.tsx';
+import {
+	Keywords,
+	Inline,
+	route,
+	values,
+	translate,
+	Translation,
+} from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	TooltipScripts,
@@ -14,16 +21,29 @@ import Header from '../components/Header.tsx';
 import ProxySettings from '../components/ProxySettings.tsx';
 import Footer from '../components/Footer.tsx';
 
+const links = {
+	scramjet: (text: string) => (
+		<a
+			href={route('/github/scramjet')}
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			<strong>{text}</strong>
+		</a>
+	),
+	faq: (text: string) => <a href={route('/questions')}>{text}</a>,
+};
+
 export default function Scramjet() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
 			</div>
 			<div id="background" class="fullwidth"></div>
-			<Cooking />
+			<Keywords />
 			<div data-aos="fade-right" class="hero-grid-container">
 				<div class="box-hero">
 					<div class="hero-content">
@@ -34,33 +54,7 @@ export default function Scramjet() {
 								alt="Scramjet"
 							/>
 							<p>
-								<a
-									href={route('/github/scramjet')}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<strong>Scramjet</strong>
-								</a>{' '}
-								is a web proxy designed with performance and
-								security in mind to evade internet censorship,{' '}
-								bypass arbitrary web browser restrictions and
-								innovate web proxy technologies. This allows you
-								to browse various websites with higher level of
-								privacy and access popular resources like
-								Discord, GeForce NOW, Twitter and YouTube on
-								restricted networks.
-								<br />
-								<br />
-								For CAPTCHA challenges please solve them slowly.
-								Scramjet is so fast you might get stuck in a
-								loop.
-								<br></br>
-								Enable Tor routing if you are struggling to
-								login to services or view
-								<br />
-								{'\n              View the '}
-								<a href={route('/questions')}>FAQ</a> page if
-								you have any issues with the proxy.
+								<Translation id="scramjet.intro" tags={links} />
 							</p>
 						</div>
 						<div class="proxy-form text-center">
@@ -68,7 +62,9 @@ export default function Scramjet() {
 								<select
 									id="search-engine"
 									name="search-engine"
-									aria-label="Search engine"
+									aria-label={translate(
+										'settings.browsing.searchEngine'
+									)}
 									class="pr-button glowbutton search-engine-list"
 								>
 									{[
@@ -93,7 +89,9 @@ export default function Scramjet() {
 										type="text"
 										spellcheck="false"
 										autocomplete="off"
-										placeholder="Type a URL here or enter a search query!"
+										placeholder={translate(
+											'scramjet.searchPlaceholder'
+										)}
 										id="search-input"
 									/>
 									<ul id="autocomplete"></ul>
@@ -103,7 +101,7 @@ export default function Scramjet() {
 									class="pr-button glowbutton pr-go2 link-button"
 									id="search-btn"
 								>
-									SEARCH
+									{translate('scramjet.search')}
 								</button>
 							</div>
 							<ProxySettings />
@@ -114,7 +112,7 @@ export default function Scramjet() {
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
-			<Cooking />
+			<Keywords />
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
 			</Inline>
@@ -125,8 +123,8 @@ export default function Scramjet() {
 export function Head() {
 	return (
 		<>
-			<title>InvisiProxy LTS | Scramjet Proxy</title>
-			<PageDescription content="The new highly innovative proxy of Mercury Workshop using technologies such as service workers and sophisticated rewriting techniques with CAPTCHA support. Scramjet focuses on speed with YouTube, now.gg, Spotify, CoolMathGames and various .io sites!" />
+			<title>{`InvisiProxy LTS | ${translate('scramjet.pageTitle')}`}</title>
+			<PageDescription content={translate('scramjet.description')} />
 			<ProxyPreloads />
 			<HeadContent />
 			<ScramjetScripts utilities />

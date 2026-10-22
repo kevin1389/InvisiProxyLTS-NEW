@@ -1,4 +1,4 @@
-import { Cooking } from '../document-helpers.tsx';
+import { Keywords } from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	PageScripts,
@@ -12,7 +12,7 @@ import Footer from '../components/Footer.tsx';
 export default function PageTemplate() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
@@ -24,7 +24,7 @@ export default function PageTemplate() {
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
-			<Cooking />
+			<Keywords />
 		</>
 	);
 }

@@ -1,4 +1,4 @@
-import { Cooking } from '../document-helpers.tsx';
+import { Keywords } from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	PageScripts,
@@ -13,13 +13,13 @@ import Footer from '../components/Footer.tsx';
 export default function Privacy() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
 			</div>
 			<div id="background" class="fullwidth"></div>
-			<Cooking />
+			<Keywords />
 			<div id="mainbody" class="box-hero">
 				<div id="documentation" class="hero-grid-container">
 					<div class="box-hero">
@@ -29,11 +29,11 @@ export default function Privacy() {
 					</div>
 				</div>
 			</div>
-			<Cooking />
+			<Keywords />
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
-			<Cooking />
+			<Keywords />
 		</>
 	);
 }

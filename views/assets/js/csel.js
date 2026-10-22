@@ -30,14 +30,22 @@ const storageId = `${values.storageNamespace}-storage`,
   readStorage = (name) => storageObject()[name],
   useStorageArgs = (name, func) => func(readStorage(name)),
   // All cookies should be secure and are intended to work in IFrames.
+  // Cookies are site-wide so a choice made on /ja/ also applies to /.
+  // Clearing the unscoped copy removes cookies left behind under the old
+  // default path (e.g. /ja), which would otherwise shadow the real one.
   setCookie = (name, value) => {
     document.cookie =
+      name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure;';
+    document.cookie =
       name +
-      `=${encodeURIComponent(value)}; expires=${date}; SameSite=None; Secure;`;
+      `=${encodeURIComponent(value)}; expires=${date}; path=/; SameSite=None; Secure;`;
   },
   removeCookie = (name) => {
     document.cookie =
       name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=None; Secure;';
+    document.cookie =
+      name +
+      '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; SameSite=None; Secure;';
   },
   readCookie = async (name) => {
     // Get the first cookie that has the same name.
@@ -446,6 +454,23 @@ if (document.getElementById('csel')) {
     if (e.isTrusted) location.reload();
   });
 
+  attachClassEventListener('language-list', 'change', (e) => {
+    const value = e.target.value;
+
+    value === 'auto'
+      ? (removeStorage('Language'), removeCookie('Language'))
+      : (setStorage('Language', value), setCookie('Language', value));
+
+    if (!e.isTrusted) return;
+
+    const alternate = document.querySelector(
+      `link[rel="alternate"][hreflang="${value === 'auto' ? 'x-default' : value}"]`
+    );
+    alternate
+      ? location.assign(new URL(alternate.href).pathname + location.search + location.hash)
+      : location.reload();
+  });
+
   attachClassEventListener('history-toggle', 'change', (e) => {
     const value = e.target.checked ? 'hidehistory' : 'none';
 
@@ -503,6 +528,12 @@ useStorageArgs('Theme', (s) => {
     s || defaultTheme,
     classEvent(themeList, 'change')
   )();
+});
+
+useStorageArgs('Language', (s) => {
+  // Restore the cookie if it was cleared so the next page uses the same language.
+  if (s) setCookie('Language', s);
+  classUpdateHandler(document.getElementsByClassName('language-list'), s || 'auto')();
 });
 
 useStorageArgs('SearchEngine', (s) => {

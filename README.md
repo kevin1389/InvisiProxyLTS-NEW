@@ -112,6 +112,7 @@ Replit is no longer free and Heroku has a set policy against web proxies. Try Gi
     - [TOR Routing](#toronionsocks5-routing-setup)
     - [Proxy](#proxy-configuration)
     - [Client Navigation](#client-navigation-configuration)
+    - [Translations](#translations)
   - [Structure](#structure)
     - [Structure Information](#structure-information)
     - [Static Files](#details-of-views)
@@ -255,6 +256,16 @@ Every other localized changes for source randomization, auto-minify, etc. are lo
 - `usingSEO`: Enable Source Randomization which randomizes the source by swapping chunks of data specified in `./src/data.json`. Highly useful for masking keywords that will automatically flag or block InvisiProxy LTS as well as preventing source blocks.
 - `verbose`: Enables compiling and building messages to see progress and possible issues while compiling.
 - `mirrorLinksFile`: Server-only file used by the Links page dispenser, defaulting to `private/mirror-links.txt`. Relative paths are resolved from the project root; absolute paths are also supported. Use one HTTP(S) URL per line and keep the file outside `views/` so it is not publicly served. Restart the server after changing this setting.
+- `geoLanguage`: Enables automatic language selection using Cloudflare's `CF-IPCountry` header. Only enable this behind Cloudflare, since the header can otherwise be set by anyone. Countries are listed per language under `language.countries` in each `./src/locales/*.yaml` file.
+- `singleLanguage`: When `true`, only the language set in `language` is built and every visitor gets it, with the Language setting hidden. Useful for Docker or other deployments that only need one language, since builds are faster and smaller. Defaults to `false`.
+- `language`: The language to build when `singleLanguage` is on, matching a file in `./src/locales/` (e.g. `en` for `en.yaml`). Defaults to `en`. For Docker, set this in `config.json` before running `docker build` or `docker compose build`, since languages are chosen at build time.
+
+#### Translations
+
+InvisiProxy LTS is translated on **[Crowdin](https://crowdin.com/project/invisiproxy)**, and anyone can help without needing to touch code. Join the project, choose a language and start translating. Finished translations are synced into `./src/locales/` automatically.
+
+See [`src/locales/README.md`](src/locales/README.md) for the translation rules (placeholders, tags and masked terms). If your language isn't listed on Crowdin, open an issue or ask in the Discord.
+
 #### Tor/Onion/SOCKS5 Routing Setup
 
 You need to setup Tor (no GUI need/GUI is alright. With GUI replace port 9050 with 9150) in order for the Onion Routing setting to work!
@@ -356,7 +367,7 @@ prSet('pr-example', 'example');
 
 ## Future Additions
 
-<a href="https://github.com/InvisiProxy/InvisiProxyLTS/blob/master/TODO.md">This</a> is our nonexhaustive todo list for InvisiProxy LTS v6.x.x and above. Release for production will be v7.x.x and above.
+<a href="https://github.com/InvisiProxy/InvisiProxyLTS/blob/master/TODO.md">This</a> is our nonexhaustive todo list for InvisiProxy LTS.
 
 ## Vague Explanation for Beginners With External Proxies and Hosting
 
@@ -364,7 +375,7 @@ You will first want to host your proxies locally or externally.
 
 #### List of some good hosting options:
 
-- <a href="https://crunchbits.com/">Crunchbits</a> ( Current Hosting Provider)
+- <a href="https://synteq.com/">Synteq</a> ( Current Hosting Provider)
 - <a href="https://greencloudvps.com">Greencloud</a> (Paid)
 - <a href="https://www.oracle.com/cloud">Oracle Cloud</a> (Free, Paid, Dedicated)
 - <a href="https://azure.microsoft.com">Azure</a> (Free and Paid)
@@ -512,4 +523,4 @@ This project currently uses Scramjet and Ultraviolet as web proxies adhering to 
 
 ### Notable Mentions:
 
-- <a href="https://crunchbits.com/">Crunchbits</a> (Hosting Provider)
+- <a href="https://synteq.com/">Synteq</a> (Hosting Provider)

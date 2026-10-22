@@ -7,7 +7,6 @@ import {
 	createServer as createHttpServer,
 	request,
 } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runInNewContext } from 'node:vm';
@@ -27,6 +26,7 @@ const { tryReadFile, preloaded404 } = await load<
 >('src/server/files.ts');
 const wispSource = 'src/server/wisp.ts';
 const testBrowser = process.env.INVISIPROXY_TEST_BROWSER === '1';
+const targetPort = 18765;
 if (testBrowser)
 	await writeFile(
 		wispSource,
@@ -34,6 +34,10 @@ if (testBrowser)
 			.replace('allowDirectIP: false', 'allowDirectIP: true')
 			.replace('allowPrivateIPs: false', 'allowPrivateIPs: true')
 			.replace('allowLoopbackIPs: false', 'allowLoopbackIPs: true')
+			.replace(
+				'ports: [80, 443,',
+				`ports: [${targetPort}, 80, 443,`
+			)
 	);
 
 await mkdir('views/dist', { recursive: true });
@@ -217,9 +221,9 @@ try {
 			);
 		});
 		await new Promise<void>((resolve) =>
-			target.listen(0, '127.0.0.1', resolve)
+			target.listen(targetPort, '127.0.0.1', resolve)
 		);
-		const targetUrl = `http://127.0.0.1:${(target.address() as AddressInfo).port}/`;
+		const targetUrl = `http://127.0.0.1:${targetPort}/`;
 		const browser = await chromium.launch({
 			headless: true,
 			args: ['--no-sandbox'],

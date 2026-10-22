@@ -1,4 +1,4 @@
-import { Cooking, route, values } from '../document-helpers.tsx';
+import { Keywords, route, values, translate } from '../document-helpers.tsx';
 import {
 	ScramjetScripts,
 	PageScripts,
@@ -12,7 +12,7 @@ import Settings from '../components/Settings.tsx';
 export default function ProxyFrame() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div class="loader loader-active">
 				<div class="loader-w"></div>
@@ -39,7 +39,7 @@ export default function ProxyFrame() {
 						class="glowbutton"
 						id="search-input"
 						type="text"
-						placeholder="Type a URL or search..."
+						placeholder={translate('frame.searchPlaceholder')}
 						spellcheck="false"
 						autocomplete="off"
 					/>
@@ -68,14 +68,14 @@ export default function ProxyFrame() {
 					<i class="fas fa-chevron-up"></i>
 				</button>
 			</div>
-			<Cooking />
+			<Keywords />
 			<iframe
 				title="Proxied page"
 				id="frame"
 				allow="fullscreen"
 				autofocus={true}
 			></iframe>
-			<Cooking />
+			<Keywords />
 			<script
 				innerHTML={`
       const windowFrame = document.getElementById('frame');

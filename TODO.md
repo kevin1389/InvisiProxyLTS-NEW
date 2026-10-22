@@ -1,4 +1,4 @@
-This will be our nonexhaustive todo list for InvisiProxy LTS v6.x.x and above. Release for production will be v8.x.x and above.
+This will be our nonexhaustive todo list for InvisiProxy LTS v8.x.x and above. Release for production is now.
 
 ## Priority
 

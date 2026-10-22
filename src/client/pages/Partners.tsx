@@ -1,4 +1,4 @@
-import { Cooking, Inline, route } from '../document-helpers.tsx';
+import { Keywords, Inline, route, translate } from '../document-helpers.tsx';
 import {
 	ParticlesScript,
 	TooltipScripts,
@@ -19,24 +19,21 @@ import App from '../components/AppButton.tsx';
 export default function Partners() {
 	return (
 		<>
-			<Cooking />
+			<Keywords />
 			<AntiExfil />
 			<div id="header" class="fullwidth">
 				<Header />
 			</div>
 			<div id="background" class="fullwidth"></div>
-			<Cooking />
+			<Keywords />
 			<div data-aos="fade-right" class="hero-grid-container">
 				<div class="box-hero">
 					<div class="hero-content">
 						<div class="proxy-header text-center">
-							<h1 class="bigtitle">Partner Services</h1>
-							<p>
-								Explore our partner projects. Our partners
-								feature a similar model to InvisiProxy so be
-								sure to join their respective discords for more
-								links.
-							</p>
+							<h1 class="bigtitle">
+								{translate('partners.title')}
+							</h1>
+							<p>{translate('partners.intro')}</p>
 						</div>
 						<div class="proxy-form text-center">
 							<div class="glist">
@@ -49,19 +46,13 @@ export default function Partners() {
 								))}
 							</div>
 							<br></br>
-							<p>
-								{' '}
-								Our partners have features like unblocked games,
-								web ports and emulation. All partners are open
-								source and free to use. Consider joining their
-								communities and supporting them if you can.
-							</p>
+							<p>{translate('partners.features')}</p>
 							<ProxySettings />
 						</div>
 					</div>
 				</div>
 			</div>
-			<Cooking />
+			<Keywords />
 			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
@@ -75,7 +66,7 @@ export default function Partners() {
 export function Head() {
 	return (
 		<>
-			<title>InvisiProxy LTS | Partners</title>
+			<title>{`InvisiProxy LTS | ${translate('header.partners.label')}`}</title>
 			<PageDescription />
 			<ProxyPreloads />
 			<HeadContent />

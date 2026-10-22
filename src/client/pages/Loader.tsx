@@ -1,17 +1,17 @@
-import { Cooking, Inline, route, SEO } from '../document-helpers.tsx';
+import { Keywords, Inline, route, SEO } from '../document-helpers.tsx';
 
 export default function Loader() {
 	return (
 		<>
-			<Cooking />
-			<Cooking />
-			<Cooking />
-			<Cooking />
+			<Keywords />
+			<Keywords />
+			<Keywords />
+			<Keywords />
 			<Inline>
 				<script src={route('assets/js/loader.js', 'inline')} />
 			</Inline>
-			<Cooking />
-			<Cooking />
+			<Keywords />
+			<Keywords />
 		</>
 	);
 }

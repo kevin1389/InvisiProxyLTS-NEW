@@ -29,6 +29,34 @@ for (const usingSEO of [true, false])
 		});
 	}
 
+test('SEO builds give each language its own indexable URLs', {
+	timeout: 180000,
+}, async (t) => {
+	const { writeFile } = await import('node:fs/promises');
+	const root = await fixture(
+		t,
+		{ usingSEO: true, disguiseFiles: false, geoLanguage: true },
+		true
+	);
+	await writeFile(
+		join(root, 'src/locales/fr.yaml'),
+		[
+			'language:',
+			'  name: Français',
+			'  countries: [FR]',
+			'faq:',
+			'  meta:',
+			'    title: FAQ InvisiProxy',
+			'',
+		].join('\n')
+	);
+	await buildFixture(root);
+	for (const probe of ['locale-probe.ts', 'http-probe.ts'])
+		await run(root, [
+			fileURLToPath(new URL(`../fixtures/${probe}`, import.meta.url)),
+		]);
+});
+
 test('a production rebuild removes stale artifacts and publishes complete documents', {
 	timeout: 240000,
 }, async (t) => {
